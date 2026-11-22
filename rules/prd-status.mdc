@@ -1,0 +1,28 @@
+---
+description: Keep docs/prd.md Status columns current when starting, finishing, or blocking work
+alwaysApply: true
+---
+
+# PRD status hygiene
+
+`docs/prd.md` is the source of truth for scope and sequencing. Update its `Status` columns yourself — do not wait for the user to ask.
+
+## When to update
+
+In the **same change** that starts, blocks, or finishes work (or in the same turn before coding if the row is still `not started`):
+
+| Event | Set Status to | Also |
+| --- | --- | --- |
+| Begin a story, requirement, or `V-*` spike | `in progress` | Confirm `Depends on` / gates from section 13 |
+| Acceptance criteria met with evidence | `done` | Mark linked `FR-*` / `NFR-*` / `SEC-*` `done` only when a done story demonstrates them |
+| Spike, missing credential, or provider limit stops work | `blocked` | Name the blocker in `docs/blockers.md` |
+| New story/requirement needed | Add the row first | Do not invent parallel tracks that skip a gate |
+
+Valid values only: `not started` | `in progress` | `blocked` | `done`.
+
+## Rules of thumb
+
+- Work items come from **section 13** (`M*`, gates, `V-*`). Prefer those IDs over ad-hoc task lists.
+- Merged or written code with no evidence stays `in progress`, not `done`.
+- When blocked, update both the PRD row and `docs/blockers.md` in the same turn.
+- Do not ask the user whether to update the PRD for these status transitions; just do it and mention the ID briefly in the reply.
