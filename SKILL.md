@@ -1,12 +1,13 @@
 ---
 name: prd-driven-delivery
 description: >-
-  Bootstraps and runs product work from a central docs/prd.md — milestones,
-  gated stories, FR/NFR/SEC IDs, verification spikes, status hygiene, and
-  blockers. Use when starting a project with a PRD, adopting PRD-driven
-  delivery, scaffolding docs/prd.md from the template, updating story Status,
-  opening gates, or when the user mentions PRD.md, section 13, M*, G*, V-*,
-  or docs/blockers.md.
+  Authors and runs product work from a central docs/prd.md — drafts a PRD from
+  handoffs, meeting notes, chats, and briefs; asks clarifying questions when
+  scope is unclear; then bootstraps milestones, gates, FR/NFR/SEC IDs,
+  verification spikes, status hygiene, and blockers. Use when writing or
+  updating a PRD, turning notes into requirements, starting PRD-driven
+  delivery, scaffolding docs/prd.md, updating story Status, opening gates, or
+  when the user mentions PRD.md, section 13, M*, G*, V-*, or docs/blockers.md.
 ---
 
 # PRD-driven delivery
@@ -19,11 +20,87 @@ description: >-
 
 | User intent | Action |
 |---|---|
-| New project / “set up PRD-driven delivery” | Run **Bootstrap** below |
+| “Write a PRD” / notes → requirements | Run **Author a PRD** below |
+| New project / “set up PRD-driven delivery” | Author if needed, then **Bootstrap** |
 | “What’s next?” / pick work | Read section 13 + gates; pick the next unblocked `P0`/`P1` story |
 | Start / finish / block a story | Update `Status` in the same change (see hygiene) |
 | Scope change / new provider | Decision record + PRD row first; then code |
 | Ticket / epic body | Use section 15 ticket template |
+
+## Author a PRD
+
+Turn source material into a filled [templates/prd.md](templates/prd.md). Do **not** invent binding scope, providers, or gates when the inputs are silent — ask first.
+
+### 1. Gather sources
+
+Collect whatever exists (read in-repo; ask for missing paths or paste):
+
+- Handoffs, architecture briefs, RFCs
+- Meeting notes, call transcripts, Slack/email threads
+- Prior PRDs, tickets, roadmaps, decision drafts
+- Repo baseline (stack, layout, what already ships)
+
+Link durable sources from the PRD header / section 17. Prefer keeping a handoff as its own doc (`docs/handoff.md` or the project’s name) when it owns provider constraints.
+
+### 2. Extract a draft outline (before writing the full PRD)
+
+From the sources, draft only what is supported:
+
+| PRD area | Extract |
+|---|---|
+| Summary + problem | Who, job-to-be-done, failure modes |
+| Goals / non-goals | In-release vs explicitly out |
+| Users | Personas and success looks-like |
+| Principles | Binding product rules |
+| Experience | Primary flow + edge states |
+| Requirements | Candidate `FR-*` / `NFR-*` / `SEC-*` |
+| Architecture | Must / must-not constraints |
+| Milestones + gates | Ordered `M*` / `G*` with DoD |
+| Stories + spikes | Section 13 rows + blocking `V-*` |
+| Acceptance scenario | Scripted pass/fail demo |
+
+Mark each item **known**, **inferred**, or **unknown**. Inferred items need confirmation; unknown items become questions.
+
+### 3. Clarify when clarity is lacking (required)
+
+If anything material is missing or conflicting, **stop and ask a short series of questions** before writing or rewriting the PRD. Do not pad the PRD with guessed scope.
+
+Use a structured question UI when available (e.g. AskQuestion); otherwise ask conversationally in one batch when possible.
+
+Ask about gaps in this order (skip what sources already settle):
+
+1. **Product & release** — name, one-sentence product, release name, success for v1
+2. **Users** — primary persona(s) and MVP success signal
+3. **In / out** — must-haves vs explicit non-goals for this release
+4. **Constraints** — stack, host, providers that are binding vs flexible
+5. **Risks / unknowns** — what must be spiked (`V-*`) before build
+6. **Sequencing** — first gate evidence, what “done” means for M0/M1
+7. **Security & data** — auth baseline, secrets, retention before external users
+8. **Conflicts** — where two sources disagree; which wins until a decision record
+
+Rules for questioning:
+
+- Prefer **few, high-leverage** questions (roughly 3–8 per round). Batch related choices.
+- Offer concrete options when the answer space is small; allow free text when it is not.
+- After answers, ask a **follow-up round** only for remaining blockers to a coherent section 12–13.
+- If the user says “you decide” on a non-binding detail, pick a default, label it inferred in the draft, and continue.
+- Never skip questions that would change gates, providers, security baseline, or acceptance scenario.
+
+### 4. Write the PRD
+
+1. Copy [templates/prd.md](templates/prd.md) → `docs/prd.md` (or Bootstrap first if the repo is empty).
+2. Fill every section; remove unused subsections only when they truly do not apply.
+3. Ensure section 13 stories link requirement IDs and have testable acceptance criteria.
+4. Add `V-*` rows for every guessed API/provider integration.
+5. Set all new row `Status` to `not started` unless evidence already exists.
+6. Create `docs/blockers.md` if missing; leave empty or note open clarification items briefly.
+7. For choices that close a conflict, write `docs/decisions/<topic>.md` (Accepted) and link it.
+
+Show the user a brief summary: release goal, milestone list, open spikes, and any remaining unknowns.
+
+### 5. Revise from new notes
+
+When the user adds meeting notes or discussion later: diff against the PRD, propose row-level updates (requirements, stories, non-goals), ask before expanding scope past the current release, then edit `docs/prd.md` and decisions as needed.
 
 ## Bootstrap (new or empty repo)
 
@@ -35,7 +112,7 @@ Copy from this skill into the project:
 | [templates/blockers.md](templates/blockers.md) | `docs/blockers.md` |
 | [rules/prd-status.mdc](rules/prd-status.mdc) | `.cursor/rules/prd-status.mdc` (`alwaysApply: true`) |
 
-Then fill the PRD placeholders (`{{…}}`) with product name, release, stack baseline, and the first epic’s stories.
+If sources exist, run **Author a PRD** to fill placeholders. If not, ask the clarification questions first, then fill.
 
 ## Docs layout
 
@@ -141,7 +218,16 @@ A story is `done` only when acceptance criteria have evidence (test name, comman
 
 ## Agent workflow checklist
 
-Copy and track when executing against an existing PRD:
+**Authoring**
+
+```
+- [ ] Gather handoff / notes / chats / repo baseline
+- [ ] Outline known vs inferred vs unknown
+- [ ] Ask clarification questions for material gaps (do not guess gates/providers/security)
+- [ ] Write docs/prd.md from template; link decisions; summarize for the user
+```
+
+**Executing** (existing PRD)
 
 ```
 - [ ] Read docs/prd.md sections 0, 12, 13 (and 17 map if present)
